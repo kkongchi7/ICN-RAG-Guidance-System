@@ -107,9 +107,3 @@ chroma_client = chromadb.PersistentClient(path="/content/chroma_db")
 * 📊 **Evaluation**: RAGAS를 활용한 응답 정확성 정량 평가.
 
 ---
-
-```
-
-이 내용을 깃허브 저장소의 `README.md`에 바로 붙여넣으시면 됩니다. 추가로 시스템 구조도나 데모 스크린샷 이미지가 있다면 `` 부분에 실제 이미지 링크를 넣으시는 것을 추천드려요. 더 수정이 필요한 부분이 있을까요?
-
-```
