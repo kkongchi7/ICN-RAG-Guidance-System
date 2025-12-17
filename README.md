@@ -8,7 +8,7 @@
 
 ## 🌟 Key Features
 
-* **智能 Routing**: LLM과 Rule 기반 로직을 활용하여 질의를 FLIGHT / FACILITY / BUS 카테고리로 자동 분류.
+* **질의 Routing**: LLM과 Rule 기반 로직을 활용하여 질의를 FLIGHT / FACILITY / BUS 카테고리로 자동 분류.
 * **공간 기반 검색**: H3 라이브러리를 통해 게이트나 특정 시설 "근처"의 위치 기반 검색 지원.
 * **복합 필터링**: ChromaDB의 메타데이터 필터링을 사용하여 터미널, 층, 항공사 등 상세 조건 검색.
 * **한국어 최적화**: `multilingual-e5-base` 모델을 사용하여 한국어 자연어 이해도 향상.
