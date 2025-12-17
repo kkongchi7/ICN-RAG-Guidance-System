@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 facilities_search_chroma.py
-인천공항 시설 검색 + H3 기반 근처 탐색 (Chroma + Spatial Index 통합 버전)
+인천공항 시설 검색 + H3 기반 근처 탐색
 """
 
 import re, math, json
@@ -23,7 +22,7 @@ collection = client.get_collection(COLLECTION_NAME)
 model = SentenceTransformer(MODEL_NAME)
 
 # -------------------------------------------------------------
-# 🔧 유틸 함수
+# 유틸 함수
 # -------------------------------------------------------------
 def _normalize(q: str) -> str:
     return re.sub(r"\s+", " ", q.strip())
@@ -43,7 +42,7 @@ def _haversine(lat1, lon1, lat2, lon2):
     return 2 * R * math.asin(math.sqrt(a))
 
 # -------------------------------------------------------------
-# 🎯 질의 힌트 추출
+# 질의 힌트 추출
 # -------------------------------------------------------------
 def parse_query_hints(q: str):
     ql = q.lower().replace(" ", "")
@@ -66,7 +65,7 @@ def parse_query_hints(q: str):
     return {"terminal": term, "floor": floor, "category": cat}
 
 # -------------------------------------------------------------
-# 🧠 리랭킹 함수
+# 리랭킹 함수
 # -------------------------------------------------------------
 def _facility_bonus(meta, query: str) -> float:
     hints = parse_query_hints(query)
@@ -80,7 +79,7 @@ def _facility_bonus(meta, query: str) -> float:
     return score
 
 # -------------------------------------------------------------
-# 🔍 메인 검색 (+카테고리 자동 감지 + 디버그)
+# 메인 검색
 # -------------------------------------------------------------
 def search_facilities_chroma(query: str, k: int = 10, min_score: float = 0.6, debug: bool = True):
     query_norm = _normalize(query)
@@ -130,7 +129,7 @@ def search_facilities_chroma(query: str, k: int = 10, min_score: float = 0.6, de
     return hits[:k]
 
 # -------------------------------------------------------------
-# 📍 근처 검색 (H3 기반 spatial index 사용)
+# nearby 검색 (H3 기반 spatial index 사용)
 # -------------------------------------------------------------
 try:
     import h3
@@ -155,26 +154,25 @@ def normalize_building_name(name: str) -> str:
 def is_nearby_pattern(q: str) -> bool:
     return any(k in q for k in ["근처", "주변", "가까운", "옆", "맞은편"])
 
-# ===== 핵심 함수 =====
 def structured_nearby_any(query: str, max_k: int = 10, start_ring: int = 2, final_ring: int = 15, max_distance_m: int = 250):
     """
     H3 기반 spatial index를 이용한 근처 시설 탐색 (다단계 ring 확장)
     """
     from nearby_search_spatial import haversine as _haversine
 
-    # 1️⃣ 질의 파싱
+    # 질의 파싱
     m = re.search(r"(.+?)\s*(근처|주변|가까운|옆|맞은편)\s*(.+)", query)
     if not m:
         return {"error": "패턴 불인식", "results": []}
     anchor_txt, _, target_txt = m.groups()
 
-    # 2️⃣ 앵커 검색
+    # 앵커 검색
     anc_hits = search_facilities_chroma(anchor_txt, k=3)
     if not anc_hits:
         return {"error": "앵커 없음", "results": []}
     anchor = anc_hits[0]["meta"]
 
-    # 3️⃣ 좌표 필드 인식 확장
+    # 좌표 필드 인식
     lat = anchor.get("lat") or anchor.get("poiLatitude") or anchor.get("latitude") or anchor.get("위도")
     lon = anchor.get("lon") or anchor.get("poiLongitude") or anchor.get("longitude") or anchor.get("경도")
     if not lat or not lon:
@@ -184,18 +182,18 @@ def structured_nearby_any(query: str, max_k: int = 10, start_ring: int = 2, fina
     building = normalize_building_name(anchor.get("building"))
     floor = anchor.get("floor")
 
-    # 4️⃣ 타깃 카테고리 정규화
+    # 타깃 카테고리 정규화
     target_category = normalize_category_query(target_txt)
     if not target_category:
         target_category = target_txt.strip()
 
-    # 5️⃣ 데이터 로드
+    # 데이터 로드
     facilities = json.loads(Path(FAC_PATH).read_text())
     items = facilities.get("items", facilities)
     spatial = json.loads(Path(SPATIAL_PATH).read_text())
     mode = spatial.get("mode", "h3")
 
-    # 6️⃣ 근처 탐색 (다단계 ring 확장)
+    # 근처 탐색 (다단계 ring 확장)
     results = []
     debug_log = []
     seen_ids = set()
@@ -235,18 +233,18 @@ def structured_nearby_any(query: str, max_k: int = 10, start_ring: int = 2, fina
                             kept_count += 1
                             seen_ids.add(fid)
                             results.append({
-                                "meta": f,                     # ✅ 핵심 수정
+                                "meta": f,                  
                                 "distance_m": round(d, 1),
                                 "score": round(1 / (1 + d / 1000), 6)
                             })
 
             debug_log.append(f"(ring={ring}, cands={cand_count}, kept={kept_count})")
 
-            # 🔹 일정 수 이상 찾으면 조기 종료
+            # 일정 수 이상 찾으면 조기 종료
             if len(results) >= max_k:
                 break
 
-    # 7️⃣ 결과 정렬 및 디버그 출력
+    # 결과 정렬 및 디버그 출력
     results.sort(key=lambda x: x["distance_m"])
     print(f"[DEBUG] Nearby step summary: {len(results)} results | {' '.join(debug_log)}")
 
@@ -266,7 +264,7 @@ def structured_nearby_any(query: str, max_k: int = 10, start_ring: int = 2, fina
 
 
 # -------------------------------------------------------------
-# 💬 LLM 프롬프트
+# LLM 프롬프트
 # -------------------------------------------------------------
 def build_facility_prompt(query: str, hits: list[dict]) -> str:
     if not hits:
@@ -328,4 +326,5 @@ def build_facility_prompt(query: str, hits: list[dict]) -> str:
 - 데이터 외 추측은 금지하며, 확인되지 않은 정보는 언급하지 마세요.
 - 비어있거나 찾을 수 없는 항목(ex. 전화번호, 거리)은 언급하지 마세요
     """.strip()
+
     return prompt
