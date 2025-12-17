@@ -57,7 +57,7 @@ chroma_client = chromadb.Client(
         anonymized_telemetry=False
     )
 )
-
+###
 ---
 
 ### 2️⃣ Project Structure
