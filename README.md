@@ -58,6 +58,8 @@ chroma_client = chromadb.Client(
     )
 )
 
+---
+
 ### 2️⃣ Project Structure
 📦 ICN-RAG
  ┣ 📜 ICN_RAG_Guidance_System_vColab.ipynb   # 메인 실행 노트북 (Colab)
@@ -69,6 +71,8 @@ chroma_client = chromadb.Client(
  ┣ 📜 build_spatial_index_2.py               # H3 기반 공간 인덱스 생성
  ┣ 📜 city_airline_map.py                   # 도시 / 항공사 매핑
  ┣ 📜 facility_category_map.py              # 시설 카테고리 매핑
+
+---
 
 ### 3️⃣ Execution Flow
 1. ICN_RAG_Guidance_System_vColab.ipynb 실행
