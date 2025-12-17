@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 build_spatial_index_2.py
----------------------------------
-공항 시설 JSON에서 공간 인덱스를 생성합니다.
-H3 또는 Grid 모드 중 선택 가능.
----------------------------------
-출력: /content/spatial_index.json
+공항 시설 JSON에서 공간 인덱스 생성
 """
 
 import json, math
@@ -17,7 +12,6 @@ from pathlib import Path
 INPUT_JSON = "/content/spoi_formatted_with_category.json"
 OUTPUT_JSON = "/content/spatial_index.json"
 
-# 사용할 모드 선택: "h3" 또는 "grid"
 MODE = "h3"        # h3 또는 grid
 H3_RES = 12        # H3 해상도 (높을수록 정밀)
 GRID_SIZE_M = 100  # grid 모드일 경우 셀 크기 (m)
@@ -31,7 +25,6 @@ except ImportError:
     h3 = None
 
 def build_index_h3(items):
-    """H3 기반 인덱스 생성"""
     index = []
     for fac in items:
         lat, lon = fac.get("poiLatitude"), fac.get("poiLongitude")
@@ -64,7 +57,6 @@ def build_index_h3(items):
     }
 
 def build_index_grid(items):
-    """Grid 기반 인덱스 생성"""
     all_lat = [f["poiLatitude"] for f in items if f.get("poiLatitude")]
     all_lon = [f["poiLongitude"] for f in items if f.get("poiLongitude")]
     if not all_lat or not all_lon:
@@ -134,3 +126,4 @@ if __name__ == "__main__":
     print(f"✅ spatial_index.json saved → {OUTPUT_JSON}")
     print(f"mode={idx['mode']} | #keys={len(idx['keys'])}")
     print("sample:", idx["keys"][0] if idx["keys"] else None)
+
