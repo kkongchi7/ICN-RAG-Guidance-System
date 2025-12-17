@@ -74,6 +74,7 @@ chroma_client = chromadb.PersistentClient(path="/content/chroma_db")
 ---
 
 ## ⚙️ System Architecture
+<img width="1492" height="772" alt="image" src="https://github.com/user-attachments/assets/9770fa30-1eff-45e8-99cc-e4ad0ced6af0" />
 
 1. **User Query**: "250번 게이트 근처 카페 알려줘"
 2. **Router**: 질의를 분석하여 `FACILITY` 모드로 분류 및 키워드(카페) 추출.
