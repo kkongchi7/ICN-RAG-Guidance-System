@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 main_router_chroma.py
-LLM 기반 라우팅 (FACILITY / FLIGHT / BUS / NONE)
- + 시설 검색
- + 항공편 검색
- + 체크인 카운터 검색
- + 공항버스 검색 (NEW)
+LLM 기반 라우팅
 """
 
 import re, json
@@ -19,12 +14,9 @@ client = OpenAI()
 
 
 # ===========================================================
-# 🚦 LLM 기반 Router (FLIGHT / FACILITY / BUS / NONE)
+# LLM 기반 Router (FLIGHT / FACILITY / BUS / NONE)
 # ===========================================================
 def detect_mode_llm(query: str) -> str:
-    """
-    LLM 라우팅: FLIGHT / FACILITY / BUS / NONE 중 하나만 출력
-    """
     prompt = f"""
 You are a query router for the Incheon Airport assistant.
 
@@ -56,7 +48,7 @@ User query: "{query}"
 
 
 # ===========================================================
-# 💬 LLM 호출 (최종 응답 생성)
+# LLM 호출 (최종 응답 생성)
 # ===========================================================
 def ask_llm(prompt: str) -> str:
     rsp = client.chat.completions.create(
@@ -70,12 +62,9 @@ def ask_llm(prompt: str) -> str:
 
 
 # ===========================================================
-# 🏢 시설 검색 처리
+# 시설 검색 처리
 # ===========================================================
 def handle_facility_query(query: str, k_fac: int = 6):
-    """시설 검색 → LLM 요약"""
-
-    # nearby 패턴 처리
     if fs.is_nearby_pattern(query):
         res = fs.structured_nearby_any(query)
 
@@ -89,14 +78,13 @@ def handle_facility_query(query: str, k_fac: int = 6):
         prompt = fs.build_facility_prompt(query, items)
         return {"mode": "nearby", "text": ask_llm(prompt)}
 
-    # 일반 시설 검색
     hits = fs.search_facilities_chroma(query, k=k_fac)
     prompt = fs.build_facility_prompt(query, hits)
     return {"mode": "facility", "text": ask_llm(prompt)}
 
 
 # ===========================================================
-# ✈️ 항공편 검색 처리
+# 항공편 검색 처리
 # ===========================================================
 def handle_flight_query(query: str):
     direction = fr.infer_direction(query)
@@ -110,7 +98,7 @@ def handle_flight_query(query: str):
 
 
 # ===========================================================
-# ✈️ 체크인 카운터 전용 처리
+# 체크인 카운터 전용 처리
 # ===========================================================
 def handle_checkin_counter_query(query: str):
     airline = fr.extract_airline(query)
@@ -146,12 +134,9 @@ def handle_checkin_counter_query(query: str):
 
 
 # ===========================================================
-# 🚌 버스 검색 처리 (SEMANTIC SEARCH 연동 완료)
+# 버스 검색 처리
 # ===========================================================
 def handle_bus_query(query: str, k=5):
-    """
-    최신 bus_search_chroma.py 기반 버스 검색 처리
-    """
     hits = bs.search_bus_routes(query, k=k)
 
     if not hits:
@@ -164,31 +149,27 @@ def handle_bus_query(query: str, k=5):
 
 
 # ===========================================================
-# 🎛 메인 라우터
+# 메인 라우터
 # ===========================================================
 def route_and_answer(query: str, k_fac: int = 4, verbose=False):
-    # 1) LLM 기반 모드 결정
     mode = detect_mode_llm(query)
 
     if verbose:
         print("\n=== 🚀 Chroma RAG Query Start ===")
         print(f"[Router] Mode Detected → {mode}")
 
-    # 시설
     if mode == "FACILITY":
         return handle_facility_query(query, k_fac=k_fac)
 
-    # 항공편
     elif mode == "FLIGHT":
         if "체크인" in query or "카운터" in query.lower():
             return handle_checkin_counter_query(query)
         return handle_flight_query(query)
 
-    # 버스 (NEW)
     elif mode == "BUS":
         return handle_bus_query(query)
 
-    # 그 외(NONE)
     else:
         fallback_prompt = f"사용자 질문: {query}\n\n공항 안내 챗봇으로서 적절한 답을 제공하세요."
         return {"mode": "fallback", "text": ask_llm(fallback_prompt)}
+
