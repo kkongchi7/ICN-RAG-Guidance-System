@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-facility_category_map.py
-PATTERNS 기반 질의어 → 표준 카테고리 매핑 사전
-"""
 import re
 
 # ===== 카테고리 키워드 매핑 =====
@@ -117,3 +112,4 @@ if __name__ == "__main__":
     ]
     for q in tests:
         print(f"{q} → {normalize_category_query(q)} | {normalize_category_query_multi(q)}")
+
