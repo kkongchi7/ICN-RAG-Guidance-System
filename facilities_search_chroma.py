@@ -158,7 +158,7 @@ def structured_nearby_any(query: str, max_k: int = 10, start_ring: int = 2, fina
     """
     H3 기반 spatial index를 이용한 근처 시설 탐색 (다단계 ring 확장)
     """
-    from nearby_search_spatial import haversine as _haversine
+    #from nearby_search_spatial import haversine as _haversine
 
     # 질의 파싱
     m = re.search(r"(.+?)\s*(근처|주변|가까운|옆|맞은편)\s*(.+)", query)
@@ -328,3 +328,4 @@ def build_facility_prompt(query: str, hits: list[dict]) -> str:
     """.strip()
 
     return prompt
+
